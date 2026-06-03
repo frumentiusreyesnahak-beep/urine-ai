@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>AI Medical - Deteksi Dehidrasi</title>
+
+    <link rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+
+    <style>
+
+        *{
+            margin:0;
+            padding:0;
+            box-sizing:border-box;
+            font-family:'Segoe UI',sans-serif;
+        }
+
+        body{
+            background:
+            linear-gradient(rgba(5,15,35,0.75), rgba(5,15,35,0.75)),
+            url('https://images.unsplash.com/photo-1586773860418-d37222d8fce3?q=80&w=1400&auto=format&fit=crop');
+            background-size:cover;
+            background-position:center;
+            min-height:100vh;
+            display:flex;
+            justify-content:center;
+            align-items:center;
+            padding:20px;
+            overflow-x:hidden;
+        }
+
+        .medical-bg{
+            position:fixed;
+            width:100%;
+            height:100%;
+            top:0;
+            left:0;
+            overflow:hidden;
+            z-index:-1;
+        }
+
+        .circle{
+            position:absolute;
+            border-radius:50%;
+            background:rgba(0,255,255,0.08);
+            animation:float 12s infinite linear;
+        }
+
+        .circle:nth-child(1){
+            width:250px;
+            height:250px;
+            top:10%;
+            left:5%;
+        }
+
+        .circle:nth-child(2){
+            width:180px;
+            height:180px;
+            bottom:10%;
+            right:10%;
+            animation-duration:18s;
+        }
+
+        .circle:nth-child(3){
+            width:120px;
+            height:120px;
+            top:50%;
+            right:20%;
+            animation-duration:15s;
+        }
+
+        @keyframes float{
+            0%{
+                transform:translateY(0px) rotate(0deg);
+            }
+            50%{
+                transform:translateY(-25px) rotate(180deg);
+            }
+            100%{
+                transform:translateY(0px) rotate(360deg);
+            }
+        }
+
+        .container{
+            width:100%;
+            max-width:650px;
+            background:rgba(255,255,255,0.08);
+            backdrop-filter:blur(15px);
+            border:1px solid rgba(255,255,255,0.15);
+            border-radius:28px;
+            padding:40px;
+            box-shadow:
+            0 0 40px rgba(0,255,255,0.15),
+            0 0 80px rgba(0,0,0,0.3);
+            color:white;
+            animation:fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn{
+            from{
+                opacity:0;
+                transform:translateY(30px);
+            }
+            to{
+                opacity:1;
+                transform:translateY(0);
+            }
+        }
+
+        .logo{
+            text-align:center;
+            margin-bottom:15px;
+        }
+
+        .logo i{
+            font-size:60px;
+            color:#00e5ff;
+            text-shadow:0 0 20px #00e5ff;
+        }
+
+        h1{
+            text-align:center;
+            font-size:34px;
+            margin-bottom:10px;
+            color:#ffffff;
+        }
+
+        .subtitle{
+            text-align:center;
+            color:#cfd8dc;
+            margin-bottom:35px;
+            font-size:15px;
+        }
+
+        .upload-box{
+            border:2px dashed rgba(255,255,255,0.4);
+            border-radius:20px;
+            padding:30px;
+            text-align:center;
+            transition:0.3s;
+            background:rgba(255,255,255,0.05);
+        }
+
+        .upload-box:hover{
+            border-color:#00e5ff;
+            background:rgba(0,229,255,0.08);
+        }
+
+        .upload-box i{
+            font-size:55px;
+            margin-bottom:15px;
+            color:#00e5ff;
+        }
+
+        input[type="file"]{
+            width:100%;
+            padding:12px;
+            border-radius:10px;
+            background:white;
+            color:black;
+            margin-top:15px;
+        }
+
+        button{
+            width:100%;
+            margin-top:25px;
+            padding:16px;
+            border:none;
+            border-radius:15px;
+            background:linear-gradient(90deg,#00bcd4,#2196f3);
+            color:white;
+            font-size:18px;
+            font-weight:bold;
+            cursor:pointer;
+            transition:0.3s;
+            box-shadow:0 0 20px rgba(0,188,212,0.4);
+        }
+
+        button:hover{
+            transform:scale(1.03);
+            box-shadow:0 0 35px rgba(0,188,212,0.7);
+        }
+
+        .loading{
+            display:none;
+            text-align:center;
+            margin-top:25px;
+        }
+
+        .loading .spinner{
+            width:60px;
+            height:60px;
+            border:6px solid rgba(255,255,255,0.2);
+            border-top:6px solid #00e5ff;
+            border-radius:50%;
+            animation:spin 1s linear infinite;
+            margin:auto;
+        }
+
+        @keyframes spin{
+            100%{
+                transform:rotate(360deg);
+            }
+        }
+
+        .result{
+            margin-top:35px;
+            padding:25px;
+            border-radius:22px;
+            background:rgba(255,255,255,0.07);
+            border:1px solid rgba(255,255,255,0.1);
+            animation:fadeIn 1s ease;
+            box-shadow:0 0 25px rgba(0,255,200,0.1);
+        }
+
+        .preview{
+            margin-top:25px;
+            text-align:center;
+        }
+
+        .preview img{
+            width:100%;
+            max-width:350px;
+            border-radius:20px;
+            border:3px solid rgba(255,255,255,0.2);
+            box-shadow:0 0 25px rgba(0,0,0,0.4);
+        }
+
+        footer{
+            margin-top:30px;
+            text-align:center;
+            color:#cfd8dc;
+            font-size:13px;
+        }
+
+        @media(max-width:768px){
+
+            .container{
+                padding:25px;
+            }
+
+            h1{
+                font-size:26px;
+            }
+
+            .logo i{
+                font-size:50px;
+            }
+
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="medical-bg">
+        <div class="circle"></div>
+        <div class="circle"></div>
+        <div class="circle"></div>
+    </div>
+
+    <div class="container">
+
+        <div class="logo">
+            <i class="fa-solid fa-heart-pulse"></i>
+        </div>
+
+        <h1>AI Medical Scanner</h1>
+
+        <div class="subtitle">
+            Sistem Cerdas Deteksi Dehidrasi Berdasarkan Warna Urine
+        </div>
+
+        <form action="/predict" method="POST" enctype="multipart/form-data"
+        onsubmit="showLoading()">
+
+            <div class="upload-box">
+
+                <i class="fa-solid fa-file-medical"></i>
+
+                <h2>Upload Sampel Urine</h2>
+
+                <p style="margin-top:10px;color:#d9f4ff;">
+                    Gunakan gambar dengan pencahayaan yang jelas
+                </p>
+
+                <input type="file" name="file" required>
+
+            </div>
+
+            <button type="submit">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                Analisis Sekarang
+            </button>
+
+        </form>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+
+            <p style="margin-top:15px;">
+                AI sedang menganalisis gambar...
+            </p>
+        </div>
+
+        {% if prediction %}
+
+        <div class="result">
+
+            <div style="display:flex;align-items:center;gap:15px;">
+
+                <div style="
+                    width:70px;
+                    height:70px;
+                    border-radius:20px;
+                    background:linear-gradient(135deg,#00e5ff,#00c853);
+                    display:flex;
+                    align-items:center;
+                    justify-content:center;
+                    font-size:32px;
+                    box-shadow:0 0 25px rgba(0,255,200,0.4);
+                ">
+                    <i class="fa-solid fa-heart-pulse"></i>
+                </div>
+
+                <div>
+                    <h2 style="margin:0;color:#00ffd5;">
+                        Hasil Analisis AI
+                    </h2>
+
+                    <p style="
+                        margin-top:5px;
+                        color:#d7faff;
+                        font-size:14px;
+                    ">
+                        Sistem berhasil menganalisis sampel urine
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- STATUS -->
+            <div style="
+                margin-top:30px;
+                padding:25px;
+                border-radius:18px;
+                background:rgba(255,255,255,0.05);
+                border:1px solid rgba(255,255,255,0.1);
+                text-align:center;
+            ">
+
+                <div style="
+                    font-size:15px;
+                    color:#cfd8dc;
+                    margin-bottom:10px;
+                ">
+                    STATUS DETEKSI
+                </div>
+
+                <div style="
+                    font-size:38px;
+                    font-weight:bold;
+                    color:#ffffff;
+                    text-transform:capitalize;
+                    text-shadow:0 0 18px rgba(0,255,255,0.5);
+                ">
+                    {{ prediction.replace('_', ' ') }}
+                </div>
+
+            </div>
+
+            <!-- INFO CARD -->
+            <div style="
+                margin-top:25px;
+                display:grid;
+                grid-template-columns:1fr 1fr;
+                gap:15px;
+            ">
+
+                <div style="
+                    background:rgba(0,188,212,0.08);
+                    padding:18px;
+                    border-radius:16px;
+                    border:1px solid rgba(0,188,212,0.2);
+                ">
+                    <div style="color:#90caf9;font-size:14px;">
+                        Pemeriksaan
+                    </div>
+
+                    <div style="
+                        margin-top:8px;
+                        font-size:18px;
+                        font-weight:bold;
+                    ">
+                        Urinalysis AI
+                    </div>
+                </div>
+
+                <div style="
+                    background:rgba(0,255,150,0.08);
+                    padding:18px;
+                    border-radius:16px;
+                    border:1px solid rgba(0,255,150,0.2);
+                ">
+                    <div style="color:#a5d6a7;font-size:14px;">
+                        Status Sistem
+                    </div>
+
+                    <div style="
+                        margin-top:8px;
+                        font-size:18px;
+                        font-weight:bold;
+                    ">
+                        Analysis Complete
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- SARAN PASIEN -->
+            <div style="
+                margin-top:25px;
+                padding:22px;
+                border-radius:18px;
+                background:rgba(255,255,255,0.06);
+                border-left:5px solid #00e5ff;
+            ">
+
+                <h3 style="
+                    color:#00ffd5;
+                    margin-bottom:18px;
+                ">
+                    <i class="fa-solid fa-user-doctor"></i>
+                    Rekomendasi Medis
+                </h3>
+
+                {% if prediction == "dehidrasi_berat" %}
+
+                <div style="color:#ffe5e5;line-height:1.9;">
+
+                    <p>⚠️ <b>Kondisi menunjukkan kemungkinan dehidrasi berat.</b></p>
+
+                    <p>💧 Segera tingkatkan konsumsi air putih.</p>
+
+                    <p>🧃 Konsumsi cairan elektrolit / oralit bila diperlukan.</p>
+
+                    <p>🥵 Hindari aktivitas berat dan paparan panas berlebihan.</p>
+
+                    <p>🏥 Jika muncul pusing, lemas, jantung berdebar, atau sulit berkemih → segera konsultasi tenaga medis.</p>
+
+                </div>
+
+                {% elif prediction == "dehidrasi_ringan" %}
+
+                <div style="color:#fff8d6;line-height:1.9;">
+
+                    <p>⚠️ <b>Terdapat indikasi dehidrasi ringan.</b></p>
+
+                    <p>💧 Perbanyak konsumsi air putih secara bertahap.</p>
+
+                    <p>🍉 Tambahkan makanan kaya cairan seperti buah & sayuran.</p>
+
+                    <p>☀️ Kurangi minuman tinggi gula / kafein berlebih.</p>
+
+                    <p>🛌 Pastikan tubuh mendapatkan istirahat cukup.</p>
+
+                </div>
+
+                {% else %}
+
+                <div style="color:#d9ffe6;line-height:1.9;">
+
+                    <p>✅ <b>Status hidrasi tubuh terlihat normal.</b></p>
+
+                    <p>💧 Pertahankan kebiasaan minum air yang cukup setiap hari.</p>
+
+                    <p>🥗 Jaga pola makan sehat & seimbang.</p>
+
+                    <p>🏃 Tetap aktif berolahraga dan pantau hidrasi saat cuaca panas.</p>
+
+                    <p>🩺 Lakukan pemeriksaan berkala bila memiliki kondisi kesehatan tertentu.</p>
+
+                </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="preview">
+
+            <img src="{{ url_for('static', filename=image_path) }}"
+            alt="Gambar Upload">
+
+        </div>
+
+        {% endif %}
+
+        <footer>
+            © 2026 AI Medical Project | Flask + TensorFlow
+        </footer>
+
+    </div>
+
+    <script>
+
+        function showLoading(){
+            document.getElementById("loading").style.display = "block";
+        }
+
+    </script>
+
+</body>
+</html> 
